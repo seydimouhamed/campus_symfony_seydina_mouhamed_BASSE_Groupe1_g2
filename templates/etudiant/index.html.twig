@@ -1,0 +1,441 @@
+
+
+{% extends "base.html.twig" %}
+{% block title %} Etudiants {% endblock %}
+{% block body %}
+  
+                <h4 class="text-center">Liste des Etudiants</h4>  
+            <div class="row col">  
+                <div class="col" id="scrollZone">
+                <br>
+                <table class="table" id="update_cont" >
+                    <tr>
+                        <td><img id="delete_elmt" src="{{asset('images/delete_sweep-24px.svg')}}" alt="-"/></td>
+                        <td><img  src="{{asset('images/create-24px.svg')}}" alt="-"/></td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </table> 
+                <br>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th><input type="checkbox" name="select_etudiant" class="select_all"/></th>
+                        <th>Matri.</th>
+                        <th>Nom</th>
+                        <th>Prenom</th>
+                       <!-- <th>Email</th>
+                        <th>Telephone</th>->
+                        <th>Date de naissance</th>-->
+                        <th>Profile</th>
+                    </tr>
+                    
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th><input type="text" class="form-control ipt recherche" name="search_matricule" id="search_matricule"/></th>
+                        <th><input type="text" class="form-control ipt recherche" name="search_nom" id="search_nom"/></th>
+                        <th><input type="text" class="form-control ipt recherche" name="search_prenom" id="search_prenom"/></th>
+                        <th> 
+                             <select class="form-control ipt recherche" id="search_profil">
+                                 <option value="" >--</option>
+                                 <option value="nonBoursier" class="">non boursier</option>
+                                 <option value="boursier" class="recherche"><small>boursier</small></option>
+                                 <option value="loge" class="recherche"><small>Logé</small></option>
+                             </select>
+                        </th>
+                    </tr>
+
+                    </thead>
+                    <tbody id='table'> 
+                  
+                    </tbody>
+                </table>
+                </div>
+                <div id="div_details" class="col-3 border border-danger rounded-sm">
+                <br>
+                   <div class=" float-right border border-danger text-danger h5 rounded-circle p-1" id="close_details"><b>x</b></div><br><br><br>
+                   <div class="col b "> <b>Détails Etudiants</b></div>
+                   <br>
+                   <div id="detail_info"></div>
+                </div>
+            </div>
+{% endblock %}
+  {% block javascripts %}
+  {{ parent() }}
+  <script>
+      $(function(){
+       // const URL={{ path('getEtudiant')}}
+
+        var tab_checkedid={};
+        var tab_allId=[];
+        var dataEtu=[];
+        let pageEncour=1;
+        $("#div_details").hide();
+
+        $('#close_details').on('click',function(){
+             $("#div_details").hide();
+        })
+
+//tab id to remove
+        var id_rm=[];
+        const tbody=$("#table");
+        $('#update_cont').hide();
+        getData(pageEncour);
+
+//ouvrir les details des étudiants
+    $('#table').on('click','.other_details',function(){
+      //  $id=$(this).attr('id').val();
+        tab = $(this).parents("tr").attr("id").split("_");
+          console.log(tab);  
+        printDetailsUser(tab[1]);
+        $("#div_details").show();
+    });
+    $('#table').on("click",".select_etu",function(){
+
+      var tab=[]
+        if($(this).parents('tr').attr("id"))
+        {
+            tab = $(this).parents("tr").attr("id").split("_");
+            //console.log(tab);
+        }
+        $('#update_cont').show();
+        if($(this).is(':checked'))
+        {
+            tab_checkedid[$(this).val()]=$(this).val();
+                //updateContUp();
+        }else
+        {
+            delete  tab_checkedid[$(this).val()];
+        }
+    });
+    $(".select_all").on("change",()=>{
+        if($(".select_all").is(":checked"))
+        {
+           tab_checkedid={};
+
+            for(i in tab_allId)
+            {
+                tab_checkedid[tab_allId[i]]=tab_allId[i]
+            }
+            console.log(tab_checkedid);
+            $(".select_etu").prop('checked',true);
+            $('#update_cont').show();
+        }else
+        {
+            id_rm=[];
+            $(".select_etu").prop('checked',false);
+            $('#update_cont').hide();
+        }
+    });
+//------------------------------
+//FUNCTION DETAILS USER
+//-----------------------------
+function printDetailsUser(id)
+{   
+    var detail=dataEtu[id];
+   if(detail.profil=="loger")
+   {
+            $('#detail_info').html(`<div class="mr-2 col">
+            <div class="row"><small><b>Date n. : </b></small><small>${detail.date_naissance}</small> </div>
+            <div class="row"><small><b>email : </b></small><small>${detail.email}</small> </div>
+            <div class="row"><small><b>Phone : </b></small><small>${detail.telephone}</small> </div>
+            <div class="row"><small><b>n. chamb : </b></small><small>${detail.numero_chambre}</small> </div>
+            <div class="row"><small><b>pension : </b></small><small>${detail.pension}</small> </div>
+            </div>`);
+   }
+   else if(detail.profil=="boursier")
+   {
+    $('#detail_info').html(`<div class="mr-2 col">
+    <div class="row"><small><b>Date n. : </b></small><small>${detail.date_naissance}</small> </div>
+    <div class="row"><small><b>email : </b></small><small>${detail.email}</small> </div>
+    <div class="row"><small><b>Phone : </b></small><small>${detail.telephone}</small> </div>
+    <div class="row"><small><b>pension : </b></small><small>${detail.pension}</small> </div>
+    </div>`);
+
+   }
+   else
+   {      
+    $('#detail_info').html(`<div class="mr-2 col">
+    <div class="row"><small><b>Date n. : </b></small><small>${detail.date_naissance}</small> </div>
+    <div class="row"><small><b>email : </b></small><small>${detail.email}</small> </div>
+    <div class="row"><small><b>Phone : </b></small><small>${detail.telephone}</small> </div>
+    <div class="row"><small><b>Adresse : </b></small><small>${detail.adresse}</small> </div>
+    </div>`);
+   }
+
+}
+//-----------------------------------------------------
+//Scroll
+//--------------------------------------------------
+const scrollZone=$('#scrollZone');
+scrollZone[0].scrollHeight=30;
+scrollZone.scroll(function(){
+    const st = scrollZone[0].scrollTop;
+    const sh = scrollZone[0].scrollHeight;
+    const ch = scrollZone[0].clientHeight;
+
+       console.log(ch+" "+st+" "+sh+" "+(sh-(ch+st)));
+    if(sh-(st + ch) <= 1 ){
+
+       //console.log(ch+" "+st+" "+sh);
+        getData(pageEncour);
+    }
+
+});
+
+
+//-------------------------------------------------
+//FUNCTION getDATA
+//-------------------------------------------------
+function getData(offs)
+{
+    $.ajax({
+        type:"GET",
+        url:`{{path('getEtudiant')}}/${offs}`,
+        dataType:"JSON",
+        success:(data,status)=>{
+          //  alert('ok '+data)
+            // console.log(data['etudiants']);
+             dataEtu=dataEtu.concat($.parseJSON(data.etudiants));
+            // // console.log(dataEtu);
+             printData($.parseJSON(data.etudiants));
+            pageEncour++;
+        }
+    });
+
+}
+//---------------------------------------------------------
+//DEBUT DELETE FUNCTION
+//---------------------------------------------------------
+    $("#delete_elmt").on('click',function(){
+       for(x in tab_checkedid)
+        {
+            id_rm.push(x);
+            $(`#id_${x}`).hide();
+
+        }
+        $(".select_all").prop('checked',false);
+
+
+        $.ajax({
+            type:"POST",
+            url:'delete',
+            data:{deleteId:id_rm},
+           // dataType:"JSON",
+            success:(data,status)=>{
+                    if(data!=="error")
+                    {
+                        alert("suppression fait avec succes");
+                    }
+                    else
+                    {
+                        alert('Erreur lors de la suppression');
+                    }
+            } 
+        });
+
+    })
+
+    $('#btn_suivant').on('click',function(){
+        sendData(offset);
+    });
+    $('#btn_precedent').on('click',function(){
+       offs= offset-=5;
+        sendData(offs);
+    });
+//-------------------------------------------------------------------
+//FIN DELETE FUNCTION
+//-------------------------------------------------------------------
+
+        function printData(data,patterntab=null)
+        {
+
+            if(data.length!==0)
+            {
+               // tbody.html('');
+            $.each(data,function(id,etu){
+                tab_allId.push(etu.id);
+               let txt_nom= etu.nom;
+               let txt_prenom= etu.prenom;
+               let txt_matricule= etu.matricule;
+               if(patterntab)
+               {
+                   if(patterntab['nom']!=="")
+                   {
+                       let ptr=patterntab['nom'];
+                       let rgx=new RegExp(ptr,'g');
+                       //let pt=`/${ptr}/g`;
+                       
+                       txt_nom=txt_nom.replace(rgx,`<font color='red'>${ptr}</font>`);
+                   }
+                   if(patterntab['prenom']!=="")
+                   {
+                       let ptr=patterntab['prenom'];
+                       let rgx=new RegExp(ptr,'g');
+                       //let pt=`/${ptr}/g`;
+                       
+                       txt_prenom=txt_prenom.replace(rgx,`<font color='red'>${ptr}</font>`);
+                   }
+                   if(patterntab['matricule']!=="")
+                   {
+                       let ptr=patterntab['matricule'];
+                       let rgx=new RegExp(ptr,'g');
+                       //let pt=`/${ptr}/g`;
+                       
+                       txt_matricule=txt_matricule.replace(rgx,`<font color='red'>${ptr}</font>`);
+                   }
+               }
+              // let pattern=/ca/g;
+              // let  result=text.replace(pattern,`<font color='red'>ca</font>`);
+                tbody.append(`
+                    <tr id="tr_${etu.id}">
+                        <td><input type="checkbox" name="select_etudiant" class="select_etu"/></td>
+                        <td id="t_matricule_${etu.id}">${txt_matricule}</td>
+                        <td id="t_nom_${etu.id}">${txt_nom}</td>
+                        <td id="t_prenom_${etu.id}">${txt_prenom}</td>
+                        <td  id="s_profil_${etu.id}">${etu.profil}</td>
+                        <td class="other_details text-danger" val="${id}">+</td>
+                    </tr>
+                `)
+            });
+            }
+        }
+
+//-------------------------------------------------------------------
+//FONCTIONS DE MODIFICATIONS
+//-------------------------------------------------------------------
+  let coul;
+let type;
+let objEncours=null;
+let clone;
+    $("#table")
+        .on("click","tr",function(){
+            coul=$("body").css("background-color");
+            $(this).css("background-color","#ff7878");
+            $("#table tr").not(this).css("background-color",coul);
+        })
+        .on("dblclick","td",function(){
+            $(this).parents().css("background-color",coul);
+            const id = $(this).attr("id");
+            const tab=id.split("_");
+           // objEncours=$(this);
+
+           type=tab[0];
+           clone=$(this).text();
+
+           if((type==='t') || (type==='s'))
+           {
+               const input = getInput(tab,clone);
+               $(this).html(input);
+               $(this).children().focus();
+               if(type=='s')
+               {
+                   
+                   printDetailsUser(1);
+                   $("#div_details").show();
+               }
+           }
+        })
+        .on("focusout","td",function(e){
+
+            const {id, value}=e.target;
+            const tab=id.split("_");
+            if(type==='t')
+            {
+                $(this).html(value);
+                const data={
+                    "table":"etudiant",
+                    "champ":tab[0],
+                    "id":tab[1],
+                    "val":value
+                }
+                console.log(data);
+                // alert("les donnes"+data);
+                 updateData(data);
+             }
+             else if(type==='s')
+             {
+                // $(this).html(value);
+                  alert('ok ');
+             }
+            
+        })
+
+        
+
+        function getInput(tab, txt)
+        {
+            type=tab[0];
+            var input="";
+            if(type==="t"){
+                input = `<input type="text" id="${tab[1]}_${tab[2]}" value=${txt} />`;
+            }
+            else if(type==="s")
+            {
+               // tab_type={"1":"double","2":"individuel"}
+                input= `<select id="${tab[1]}_${tab[2]}" >
+                    <option value="loge">loge</option>
+                    <option value="boursier">Boursier</option>
+                    <option value="nonBoursier">Non Boursier</option>
+                </select>`
+            }
+           return input;
+        }
+
+
+        const updateData=(data)=>{
+            $.ajax({
+                method:"POST",
+                url:"/etudiant/update",
+                data:data,
+                success:function(data){
+                   // console.log(data);
+                    alert('Modifier avec success');
+                }
+            })
+        }
+
+
+
+//-------------------------------------------------------------------
+//FONCTIONS DE RECHERCHES
+//-------------------------------------------------------------------
+
+
+$('.recherche').on('keyup change',function(){
+    //alert('recherche enclenché');
+    $data=getSearchTab();
+   // console.log($data);
+    $.ajax({
+        url:"{{ path('rechercheEtudiant')}}",
+        method:"POST",
+        data:$data,
+       // dataType:"JSON",
+        success:function(data){
+            tbody.html('');
+            
+            //printData permet dafficher le tableau! le 2 parametre $data me permet
+            //de mettre les couleurs des occurences
+             printData($.parseJSON(data.etudiants),$data);
+        }
+    })
+})
+
+
+function getSearchTab()
+{
+    //initialisation tableau objet contenant les occurences que l'utilisateur tape!
+    let tab={"matricule":"","prenom":"","nom":"","profil":""};
+
+      tab['matricule']=$('#search_matricule').val();
+      tab['prenom']=$('#search_prenom').val();
+      tab['nom']=$('#search_nom').val();
+      tab['profil']=$('#search_profil').val();
+
+      return tab;
+}
+
+
+})
+
+  </script>
+  {% endblock %}

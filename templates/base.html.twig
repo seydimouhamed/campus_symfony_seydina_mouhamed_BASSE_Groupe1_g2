@@ -2,11 +2,155 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        {% block stylesheets %}{% endblock %}
+       <title>{% block title %}Welcome!{% endblock %}</title>
+        {% block stylesheets %}
+         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <style>
+            .nav-link
+            {
+                font-weight:bold;
+                color: #D83F3D;
+                /* color:  rgba(68, 99, 159, 0.5); */
+            }
+    
+            .recherche
+            {
+                background-image:url("{{ asset('images/search-24px.svg')}}") ;
+                background-repeat:no-repeat;
+                background-position:95%;
+            }
+            .logo
+            {
+                color:#D83F3D;
+                /* color: rgba(68, 99, 159, 0.9); */
+            }
+            
+            .container_page
+            {
+                background-color:rgba(68, 99, 159, 0.08);
+            }
+           
+.ipt
+{
+    height:32px;
+}
+            #scrollZone
+            {
+                max-height:300px;
+                 overflow-y: scroll;
+                scrollbar-width: thin; 
+            }
+
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+ 
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px #D83F3D; 
+    border-radius: 10px;
+}
+ 
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}
+        </style>
+         
+        {% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
-        {% block javascripts %}{% endblock %}
+    
+    <div class="container small font-weight-bold">
+        <div class="row col justify-content-between my-3">
+            <div class="logo float-left"> 
+                        <img style="width:50px;height:50px;" src="{{asset('images/apartment-24px.svg') }}" alt="ghj"/>
+                CAMPUS SOCIAL
+            </div>
+            <br>
+            <!-- <div class="col-4"> <input type="text" name="recherche" class="form-control recherche rounded-pill" value="" placeholder="etudiant"/></div>
+            --><div>&nbsp;</div> 
+        </div>
+        <div class="row justify-content-center"  >
+        {% if app.user %}
+            <div class="col-2">
+                <!-- Links -->
+                <ul class="navbar-nav small mt-5" >
+                    <li class="nav-item">
+                    <a class="nav-link" href="{{ path('addEtudiant')}}">
+                        <img src="{{asset('images/add_box-24px.svg')}}" alt="-"/>
+                        <!-- <img style="width:50px;height:50px;" src="public/images/apartment-24px.svg" alt="ghj"/> -->
+                        AJOUT ETUDIANT
+                    </a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="{{ path('listEtudiant') }}">
+
+                        <img src="{{asset('images/ballot-24px.svg') }}" alt="-"/>
+                        LISTE ETUDIANTS
+                    </a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="{{ path('addChambre') }}">
+
+                        <img src="{{asset('images/add_box-24px.svg') }}" alt="-"/>
+                            AJOUT CHAMBRE
+                    </a>
+                    </li>
+                    <li class="nav-item ">
+                    <a class="nav-link" href="{{ path('listChambre') }}">               
+                        <img  src="{{asset('images/ballot-24px.svg') }}" alt="-"/>
+                        LISTE CHAMBRE
+                    </a>
+                    </li>
+                    <li class="nav-item ">
+                    <a class="nav-link" href="{{ path('app_register') }}">               
+                        <img  src="{{asset('images/supervisor.svg') }}" alt="-"/>
+                        AJOUT ADMIN
+                    </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="row col justify-content-end fixed-top position-absolute">
+            {{ app.user.username }}
+                <div class="">
+                    <button id="btn_deconnexion" class="nav-link btn rounded-lg" >               
+                        <img  src="{{asset('images/logout.svg') }}" alt="-"/>
+                        Déconnexion
+                    </button>
+                </div>
+            </div>
+           {% endif %}
+            <div class="col-10 container_page" id="container_page" style="min-height:400px;"> 
+                      
+                    {% block body %}{% endblock %}
+                    <!-- ceest ici que les pages seront incluses -->
+            </div>
+        </div>
+                    {% block javascripts %}
+                        <script src = " https://unpkg.com/sweetalert/dist/sweetalert.min.js " > </script> 
+                        <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+                        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+                    
+                    
+                    <script>
+
+$('#btn_deconnexion').on('click',function(){
+    deleteFile();
+});
+const deleteFile = async () => {
+  // Wait for the user to press a button...
+  const shouldDelete = await swal("DECONNEXION?", "Vous êtes sûr de vouloir vous déconnecter?", "warning");
+
+  if (shouldDelete) {
+    // Code to actually delete file goes here
+    window.location.replace("{{ path('app_logout') }}");
+   // swal("Poof!", "Your file has been deleted!", "success");
+  }
+}
+                    </script>
+                    {% endblock %}
+    </div>
     </body>
 </html>

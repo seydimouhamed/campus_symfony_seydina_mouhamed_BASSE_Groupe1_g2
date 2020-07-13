@@ -1,0 +1,288 @@
+{# templates/Etudiant/edit.html.twig #}
+{% extends "base.html.twig" %}
+    {% block title %} Chambres {% endblock %}
+    {% block body %}
+    
+                <h4 class="text-center">Liste des chambres</h4>
+        <table class='table table-hover col-8 offset-2'>
+           <thead>
+            <tr>
+                <th>Numero</th>
+                <th>N. Batimat</th>
+                <th>Type</th>
+            </tr>
+            </thead>
+            <tbody id="table">
+               {# {% for c in chambre %}
+                <tr>
+                    <td>{{ c.numero }}</td>
+                    <td>{{ c.type }}</td>
+                    <td>{{ c.numeroBatimat }}</td>
+                        <td>
+                            <a href="{{ c.id }}/delete">             
+                                <img  src="{{asset('images/delete_sweep-24px.svg') }}" alt="-"/>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="{{ c.id }}/update">               
+                                <img  src="{{asset('images/create-24px.svg') }}" alt="-"/>
+                            </a>
+                        </td>
+                </tr>
+                {% endfor %} #}
+            </tbody>
+        </table>
+    <br>
+    <br>
+    <div class="col justify-content-end pull-bottom position-absolute fixed-bottom">
+        <button type="button" id="btn_precedent" name="precedent" value='nav_pre' class="btn_nav btn-sm ubtn float-left">Précédent</button>
+        <button type="button" id="btn_suivant" name="suivant" value='nav_suiv' class="btn_nav btn-sm ubtn float-right">Suivant</button>
+    </div>
+    {% endblock %}
+
+    {% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function(){
+
+    var tab_checkedid={};
+    var tab_allId=[];
+    let pageEncours=1;
+//tab id to remove
+    var id_rm=[];
+    const tbody=$("#table");
+    $('#update_cont').hide();
+    sendData(pageEncours);
+$('#table').on("click",".select_etu",function(){
+
+  var tab=[]
+    if($(this).parents('tr').attr("id"))
+    {
+        tab = $(this).parents("tr").attr("id").split("_");
+        //console.log(tab);
+    }
+    $('#update_cont').show();
+    if($(this).is(':checked'))
+    {
+            // if($(this).is(":checked"))
+            // {
+        tab_checkedid[$(this).val()]=$(this).val();
+            //updateContUp();
+    }else
+    {
+        delete  tab_checkedid[$(this).val()];
+    }
+});
+$(".select_all").on("change",()=>{
+    if($(".select_all").is(":checked"))
+    {
+       tab_checkedid={};
+
+        for(i in tab_allId)
+        {
+            tab_checkedid[tab_allId[i]]=tab_allId[i]
+        }
+        console.log(tab_checkedid);
+        $(".select_etu").prop('checked',true);
+        $('#update_cont').show();
+    }else
+    {
+        id_rm=[];
+        $(".select_etu").prop('checked',false);
+        $('#update_cont').hide();
+    }
+});
+//-----------------------------------------------------
+//Afficher Montrer la navigation
+//--------------------------------------------------
+function showhidenav(pageEncours,nbrpage)
+{
+if(pageEncours===1 || nbrpage===0)
+{
+    $('#btn_precedent').hide();
+}
+else
+{
+    $('#btn_precedent').show();
+}
+if(nbrpage<=pageEncours)
+{
+
+    $('#btn_suivant').hide();
+}else
+{
+    $('#btn_suivant').show();
+}
+}
+//-----------------------------------------------------------
+
+
+
+//-------------------------------------------------
+//FUNCTION SENDDATA
+//-------------------------------------------------
+function sendData(offs)
+{
+    $.ajax({
+        type:"POST",
+        url:`{{ path('getChambre')}}/${pageEncours}`,
+        data:{limit:5,offset:offs},
+        dataType:"json",
+        success:(data,status)=>{
+            console.log(data.chambre);
+           // alert(data);
+            tbody.html('');
+            printData($.parseJSON(data.chambre));
+            showhidenav(pageEncours,data.nbrPage)
+            pageEncours++;
+        }
+    });
+
+}
+//---------------------------------------------------------
+// DELETE FUNCTION
+//---------------------------------------------------------
+$("#delete_elmt").on('click',function(){
+    for(x in tab_checkedid)
+    {
+        id_rm.push(x);
+        $(`#id_${x}`).hide();
+
+    }
+    $(".select_all").prop('checked',false);
+    $.ajax({
+        type:"POST",
+        url:`${URL}/chambre/deleteChambre`,
+        data:{deleteId:id_rm},
+       // dataType:"JSON",
+        success:(data,status)=>{
+                if(data!=="error")
+                {
+                    alert("suppression fait avec succes");
+                }
+                else
+                {
+                    alert('Erreur lors de la suppression');
+                }
+        } 
+    });
+
+})
+
+$('#btn_suivant').on('click',function(){
+    sendData(pageEncours);
+});
+$('#btn_precedent').on('click',function(){
+   pageEncours-= 2;
+    sendData(pageEncours);
+});
+//-------------------------------------------------------------------
+// DELETE FUNCTION
+//-------------------------------------------------------------------
+
+
+
+            function printData(data)
+            {
+                $.each(data,function(id,cham){
+                    tab_allId.push(cham.numero);
+                    tbody.append(`
+                        <tr id="tr_${cham.id}">
+                            <td id="_id_${cham.id}">${cham.numero}</td>
+                            <td id="t_numeroBatimat_${cham.id}">${cham.numeroBatimat}</td>
+                            <td id="s_type_${cham.id}">${cham.type}</td>
+                            <td id="s_supp_${cham.id}"><button class="btn btn-danger"><span class="fa fa-archive"></span></button></td>
+                        </tr>
+
+                    `)
+                });
+            }
+
+//-------------------------------------------------------------------
+//
+// GESTION DES MODIFICATIONS ET SUPPRESSIONS
+//
+//-------------------------------------------------------------------
+let coul;
+let type;
+let objEncours=null;
+let clone;
+let page=1;
+
+        $("#table")
+        .on("click","tr",function(){
+            coul=$("body").css("background-color");
+            $(this).css("background-color","#ff7878");
+            $("#table tr").not(this).css("background-color",coul);
+        })
+        .on("dblclick","td",function(){
+            $(this).parents().css("background-color",coul);
+            const id = $(this).attr("id");
+            const tab=id.split("_");
+           // objEncours=$(this);
+
+           type=tab[0];
+           clone=$(this).text();
+
+           if((type==='t') || (type==='s'))
+           {
+               const input = getInput(tab,clone);
+               $(this).html(input);
+               $(this).children().focus();
+           }
+        })
+        .on("focusout","td",function(e){
+
+            const {id, value}=e.target;
+            const tab=id.split("_");
+            if(type==='t' || type==='s')
+            {
+                $(this).html(value);
+                const data={
+                    "table":"Chambre",
+                    "champ":tab[0],
+                    "id":tab[1],
+                    "val":value
+                }
+               // console.log(data);
+                 //alert("les donnes"+data);
+                 updateData(data);
+             }
+            
+        })
+
+        function getInput(tab, txt)
+        {
+            type=tab[0];
+            var input="";
+            if(type==="t"){
+                input = `<input type="number" id="${tab[1]}_${tab[2]}" value=${txt} />`;
+            }
+            else if(type==="s")
+            {
+               // tab_type={"1":"double","2":"individuel"}
+                input= `<select id="${tab[1]}_${tab[2]}" >
+                    <option value="double">double</option>
+                    <option value="individuel">Individuel</option>
+                </select>`
+            }
+           return input;
+        }
+
+        //update function
+
+        const updateData=(data)=>{
+            $.ajax({
+                method:"POST",
+                url:"/chambre/update",
+                data:data,
+                success:function(data){
+                    console.log(data);
+                    alert('retour du serveur');
+                }
+            })
+        }
+            
+        })
+    </script>
+    {% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html.twig" %}
+    {% block title %} Ajouter Etudiant {% endblock %}
+    {% block body %}
+    
+<legend><center><h2><b>Enregistrer Etudiants</b></h2></center></legend><br>
+        {{form_start(form,{'attr': {'id': 'form-id','action':'Javascript:void(0)'}} )}}
+        <div class="col-10 offset-1">
+            {{form_widget(form)}}
+            <div id="content_profil"></div>
+        </div>
+        <div class="col text-center px-4">
+            <input type="button" value="enregistrer" formnovalidate="formnovalidate"  id="btn_submit" class="btn btn-lg btn-warning ">
+        </div>
+        {{form_end(form)}}
+        
+    {% endblock %}
+    
+    {% block javascripts %}
+        {{ parent() }}
+        <script>
+            $(document).ready(function(){
+              
+                $('#btn_submit').on('click',function(){
+                   // console.log($('#form-id').serialize());
+                    $.ajax(
+                        {
+                        url:"{{path("register_etudiant")}}",
+                        data:$('#form-id').serialize(),
+                        method:"POST",
+                        success:function(data){
+                            $('#form-id')[0].reset();
+                            }
+                        }
+                    )
+                });
+
+
+                
+                $("#etudiant_profil").on("change",function(){
+                    
+                        $("#content_profil").html("sdfsf"+$("#etudiant_profil").val());
+
+                    $profil=$("#etudiant_profil").val();
+                    $selectPension= `<div class="form-group"> 
+                                        <label class="col control-label">Pension</label>
+                                        <div class="col selectContainer">
+                                            <div class="input-group">
+                                            <select name="pension" id="pension" class="form-control selectpicker" >
+                                                <option value="20000">Demi bourse</option>
+                                                <option value="400000">Bourse entiere</option>
+                                            </select>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                    if($profil=="2")
+                    {
+                        $("#content_profil").html($selectPension);
+                    }else if($profil=="3")
+                    {
+                        $("#content_profil").html(getInput());
+                    }else if($profil=="1")
+                    {
+                        $("#content_profil").html($selectPension);
+                        nameInput="numeroChambre"
+                        $("#content_profil").append(getInput(nameInput,"number"));
+                    }
+                });
+
+                function getInput(name="adresse",type="text")
+                {
+
+                        var input=`<div class="form-group">
+                                <label class="col control-label">${name}</label>  
+                                    <div class="col inputGroupContainer">
+                                        <div class="input-group">
+                                            <input name="${name}" placeholder="${name}" class="form-control requireinput" type="${type}" >
+                                        </div>
+                                    </div>
+                                </div>`;
+                                return input;
+                }
+            });
+
+
+            
+        </script>
+    {% endblock %}

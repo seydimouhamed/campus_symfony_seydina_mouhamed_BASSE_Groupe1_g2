@@ -1,0 +1,32 @@
+{# templates/Chambre/edit.html.twig #}
+{% extends "base.html.twig" %}
+    {% block title %} Ajouter Chambre {% endblock %}
+    {% block body %}
+        {{form_start(form,{'attr': {'id': 'form-id','action':'Javascript:void(0)'}})}}
+        {{form_widget(form)}}
+        <input type="submit" value="valider" class="btn btn-lg btn-warning">
+        {{form_end(form)}}
+    {% endblock %}
+
+    {% block javascripts %}
+    {{ parent() }}
+    <script>
+        $(document).ready(function(){
+            
+            $('#form-id').on('submit',function(){
+                console.log($('#form-id').serialize());
+                $.ajax(
+                    {
+                    url:"{{path("addChambre")}}",
+                    data:$('#form-id').serialize(),
+                    method:"POST",
+                    success:function(data){                          
+                        alert("OK");
+                        console.log(data);
+                        }
+                    }
+                )
+            })
+        })
+    </script>
+    {% endblock %}
